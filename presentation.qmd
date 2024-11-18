@@ -1,0 +1,616 @@
+---
+title: "What's a Model and how we plan hitches?"
+subtitle: "Seeds of Success Trainings 2024"
+author: "Reed Clark Benkendorf"
+date: "2024-March-22"
+institute: "Senior Spatial Data Specialist & Senior Botanist"
+date-format: long
+format: 
+  revealjs:
+    theme: black
+    highlight: pygments
+    preview-links: auto
+    logo: ./images/CBG_Logos/NegauneeInstitute_CBG-Logo-FlowerMark.png
+    chalkboard: 
+      boardmarker-width: 5
+    reveal_options:
+      width: 1920
+      height: 1080
+    fontsize: 24pt
+css: custom.css
+editor: 
+  markdown: 
+    wrap: 72
+include-in-header:
+  - text: |
+      <style>
+      #title-slide .title {
+        font-size: 1.5em;
+      }
+      </style>
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(sf)
+library(terra)
+```
+
+
+## The World is Big 
+
+::: {style="float: left; width: 40%;"}
+- 33 hour drive across the West on nice highways
+- 2100 some miles
+:::
+
+::: {style="float: right; width: 60%;"}
+<center>
+![<font size="4">Across the West</font>](./images/Bellingham-DelRio.png){height=75%, width=75%}
+</center>
+:::
+
+## Really Really Big 
+
+::: {style="float: left; width: 40%;"}
+  - A single CBG Crews last couple hitches last Season
+  - 6 hour drive to start end collections
+  
+:::
+  
+::: {style="float: right; width: 60%;"}  
+<center>
+![<font size="4">Across Eastern Nevada</font>](./images/Elko-GBNM.png){height=65%, width=65%}
+</center>
+:::
+
+
+## Priorities 
+
+::: {style="float: left; width: 40%;"}
+  - How are we doing?
+<br>
+<br>
+<br>
+  ![<font size="4">Public Employees Environmental Responibility (PEER)</font>](./images/LackBotanists.png){width=100%}
+:::
+
+::: {style="float: right; width: 60%;"}
+<center>
+  ![<font size="4">National Academy</font>](./images/NationalSeedStrategy.png){height=75%, width=75%}
+</center>
+:::
+
+# Plans 
+
+<center>
+![<font size="4">Michael Tyson</font>](./images/MikeTysonPlan.jpeg){width=60%}
+</center> 
+
+## Improv?
+
+<center>
+![<font size="4">Steven Pressfield</font>](./images/Improvisation.png){width=75%}
+</center>
+
+## Planning is Preparation
+
+<center>
+![<font size="4">Steven Pressfield</font>](./images/Preparation.jpg){width=75%}
+</center>
+
+## Perseverance and Ideas
+
+<center>
+![<font size="4">the Grandfather of Ecology?</font>](./images/Goethe.png){height=5%}
+</center>
+
+## A hitch Plan
+
+::: {style="float: left; width: 60%;"}
+  - A hitch plan is a tool.  
+  - The process will familiarize you with your domain and species. 
+:::
+
+::: {style="float: right; width: 40%;"}
+  - Hitch plans can be made in Word, or any GIS (e.g. ArcPro, QGIS) 
+:::
+
+<center>
+![<font size="4">Tools</font>](./images/Tools.png){width=50%}
+</center>
+
+# Hitch Plan Specifics
+
+::: {style="float: left; width: 40%;"}
+- Populations  
+- Coordinates   
+- Order of Visits  
+- Write plans down.  
+- Screenshot/Maps on page 2
+:::
+
+::: {style="float: right; width: 60%;"}
+<center>
+![<font size="4">Hitch Plan</font>](./images/HitchPlan1.png){width=75%}
+</center>
+:::
+
+## Consideration 1: Phenology 
+::: {style="float: left; width: 50%;"}
+- Transitions between major life history events    
+- Scouting best performed during flowering    
+- Collection performed during late into fruiting, before dehiscence/dispersal  
+- Varies year to year  
+:::
+
+::: {style="float: right; width: 50%;"}
+<center>
+![<font size="4">Probability of Flowering</font>](./images/Cymopterus_flowering.png){height=10%}
+</center>
+:::
+
+## Consideration 2: Distance 
+
+- there are 40 hours in a week, use them wisely.  
+- time during scouting - abundant, collection time - scarce  
+- long drives to disparate populations are commitments   
+- driving is your most dangerous activity  
+
+## Cons. 3: Disturbance, Land Management History 
+
+::: {style="float: left; width: 50%;"}
+- Wildfires, excessive recreation, historic grazing, have lead to virtual biological dead zones  
+- avoid burn scars after ca. ~2000  
+- consider total change intensity index   
+:::
+
+::: {style="float: right; width: 50%;"}
+<center>
+![<font size="4">Floristic Quality</font>](./images/FQI-prediction.png){height=75%}
+</center>
+:::
+
+## Cons. 4: Data Quality 
+- geo-location accuracy varies     
+- species mis-identifications are common  
+- population size ebb and flow  
+
+## Cons. 5: Soil Moisture 
+::: {style="float: left; width: 50%;"}
+- many species will produce below average amounts of seeds in dry years.  
+- soil moisture is a balance between precipitation and evaporation  
+- drought indices are devised to capture these  
+:::
+
+::: {style="float: right; width: 50%;"}
+<center>
+![<font size="4">SPEI</font>](./images/spei.png){height=75%}
+</center>
+:::
+
+# What's a Model? 
+
+- a simplified representation of complex phenomena  
+- gives us an easy way to discuss trends  
+- can be trained on subsets of data, and applied to unseen data  
+- used to predict or understand a specific question  
+
+```{r}
+ames <- AmesHousing::make_ames() |>
+  sf::st_as_sf(coords = c('Longitude', 'Latitude'), crs = 4326) |>
+  sf::st_transform( crs = 26914) %>% 
+  mutate(Longitude = sf::st_coordinates(.)[,1],
+         Latitude = sf::st_coordinates(.)[,2], 
+         Sale_Price = Sale_Price/1000)
+ames <- ames[ (ames$Lot_Area) < 25000, ]
+my_mod <- lm(Sale_Price ~ Gr_Liv_Area, data = ames)
+
+pred_grid <- expand.grid(
+  Overall_Qual = factor(
+    seq(min(as.numeric(ames$Overall_Qual)), max(as.numeric(ames$Overall_Qual)), length.out = 10)),
+  Gr_Liv_Area = seq(min(ames$Gr_Liv_Area), max(ames$Gr_Liv_Area), length.out = 10),
+  Total_Bsmt_SF = seq(min(ames$Total_Bsmt_SF), max(ames$Total_Bsmt_SF), length.out = 10), 
+  Garage_Area = seq(min(ames$Garage_Area, max(ames$Garage_Area)), length.out = 10), 
+  Year_Remod_Add = round(seq(min(ames$Year_Remod_Add), max(ames$Year_Remod_Add), length.out = 10), 0)
+  )
+pred_grid$Tot_Size <- pred_grid$Total_Bsmt_SF + pred_grid$Gr_Liv_Area + pred_grid$Garage_Area
+```
+
+## Why a Model?
+
+The questions/problems/tasks define the structure of the Model.  
+- Domain (extent of analysis in Space, and Time)  
+- Grain (resolution of analysis in Space and Time)  
+- Data Acquisition   
+- Number of Simulations  
+- Estimates of Uncertainty  
+
+<center>
+![<font size="4">George Box</font>](./images/GeorgeBox.png){height=15%, width=50%}
+</center>
+
+## Responses
+
+::: {style="float: left; width: 50%;"}
+- A variable (dependent variables) which changes due to an effect (predictor/independent variable)
+- The *price* of a house is predicted by it's size, quality, neighborhood, etc.
+:::
+
+::: {style="float: right; width: 50%;"}
+- Want to understand the trend of a response in relation to a predictor  
+- Usually easy to collect data predictor data, which with a model can then be used as a surrogate of the response  
+:::
+
+::: {.column width="100%"}
+<center>
+```{r Responses, out.width = "65%"}
+par(bg = 'black', col.axis ="white", col.main = 'white', col.lab = 'white')
+hist(ames$Sale_Price, xlab = 'Sale Price (USD) in Thousands', 
+     col = '#F1BE48', border = '#C8102E', 
+     main = 'Sale Price of Homes in Ames Iowa (2006-2010)')
+```
+</center>
+:::
+
+
+## What do data respond to? Predictors
+
+::: {style="float: left; width: 60%;"}
+- Many processes (responses/dependent variables) are effected by others (predictors/independent variables)
+- The Price of a house is predicted by it's Size. 
+:::
+
+::: {style="float: right; width: 40%;"}
+- Predictor variables are often collected by systematic data acquisition campaigns  
+:::
+
+::: {.column width="100%"}
+<center>
+```{r Predictors, out.width = "65%"}
+par(bg = 'black', col.axis ="white", col.main = 'white', col.lab = 'white')
+hist(ames$Gr_Liv_Area, xlab = 'Square Feet of Home (Above Ground)', 
+     col = '#F1BE48', border = '#C8102E', 
+     main = 'Size of Homes Sold in Ames Iowa (2006-2010)')
+```
+</center>
+:::
+
+## How do we express this relationship? 
+
+::: {style="float: left; width: 50%;"}
+- x predicts y; a linear relationship between them is represented via a *regression line*
+- *slope* change in values, rise over run. 
+- *intercept* mean value of response variable, when all predictors equal 0  
+:::
+
+::: {style="float: right; width: 50%;"}
+- a 0 square-foot house, the intercept, would cost `r paste0('$', round(as.numeric(paste0(my_mod$coefficients[1]))*1000, 0))`; sometimes the intercept does not provide interpretable information   
+- for every 1 square-foot increase in house size, it's price goes up by `r paste0('$', round(as.numeric(my_mod$coefficients[2]),3)*1000)`
+:::
+
+::: {.column width="100%"}
+<center>
+```{r regression, out.width="55%"}
+
+y1 = my_mod$coefficients[1] + (my_mod$coefficients[2] * 1000)
+y2 = my_mod$coefficients[1] + (my_mod$coefficients[2] * 2000)
+
+par(bg = 'black', col.axis ="white", col.main = 'white', col.lab = 'white')
+plot(x = ames$Gr_Liv_Area, y = ames$Sale_Price, col = '#CAC7A7', xlim = c(0, 4500),
+     ylab = 'Sales Price (Thousands)\n', xlab = 'Size (in Square Feet)\n', 
+     main = 'Relationship between House Size and Sales Price')
+abline(my_mod, col = '#C8102E', lwd = 2)
+points(x = 1000, y = y1)
+points(x = 2000, y = y2)
+segments(x0 = 1000, y0 = y1, x1 = 1000, y1 = y2, col = 'white')
+segments(x0 = 1000, y0 = y2, x1 = 2000, y1 = y2, col = 'white')
+text(x = 4000, y = 275, labels = 'y = mx + b', col = 'white')
+text(x = 4000, y = 175, labels = 'y =  slope(x) + intercept', col = 'white')
+text(x = 4000, y = 75, labels = paste0('y = ', round(my_mod$coefficients[1], 2), ' + ', 
+                                       round(my_mod$coefficients[2], 3)), col = 'white')
+text(x = 650, y = 250, labels = 
+       paste0('A $', 
+             format(round((y2-y1)*1000, 0), nsmall=0, big.mark=","), '\nincrease'), col = 'white')
+text(x = 150, y = 120, labels = 'intercept', col = 'white')
+arrows(x0 = 150, y0 = 100, x1 = 0, y1 = as.numeric( my_mod$coefficients[1]), length = 0.1, col = 'white')
+```
+</center>
+:::
+
+## How do we express uncertainty?
+
+::: {style="float: left; width: 50%;"}
+- We rarely ever know the true values of a parameter at the population level  
+- Our statistics run on our sample are not totally accurate  
+- We quantize and consider this variability  
+:::
+
+::: {style="float: right; width: 50%;"}
+- *Confidence Interval* the probability that the estimated parameter will fall between two values  
+- *Confidence Levels* a level at which to estimate a CI, e.g. so that the CI captures the true population parameter 95% of the time.  
+:::
+
+::: {.column width="100%"} 
+<center>
+```{r Confidence Intervals, out.width="50%"}
+## Confidence intervals 
+ci95 <- confint(my_mod, level = 0.95) 
+
+# 95% CI
+par(bg = 'black', col.axis ="white", col.main = 'white', col.lab = 'white')
+plot(x = ames$Gr_Liv_Area, y = ames$Sale_Price, col = '#CAC7A7', 
+     ylab = 'Sales Price (Thousands)', xlab = 'Size (in Square Feet)', 
+     main = 'Relationship between Sales Price and House Size')
+abline(ci95[,1], col = '#F1BE48')
+abline(my_mod, col = '#C8102E')
+abline(ci95[,2], col = '#F1BE48')
+
+rm(ci95)
+```
+</center>
+:::
+
+## Overfitting 
+
+::: {style="float: left; width: 40%;"}
+- If we want a better understanding of House Price, we can use more variables  
+- However, not all combinations of variables exist in a data set.  
+- If we use too many variables we can lose the ability to generalize our findings to unseen data.  
+:::
+
+::: {style="float: right; width: 60%;"}
+```{r 3D plot of three main variables, out.width="100%"}
+ames$Tot_Size <- ames$Total_Bsmt_SF + ames$Gr_Liv_Area + ames$Garage_Area
+my_mod_many_vars <- lm(Sale_Price ~ Gr_Liv_Area * Total_Bsmt_SF * Garage_Area * Year_Remod_Add, data = ames)
+
+par(bg = 'black', col.axis ="white", col.main = 'white', col.lab = 'white')
+scatterplot3d::scatterplot3d(x = ames$Tot_Size, y = ames$Year_Remod_Add, color = 'white',
+                             z = ames$Overall_Qual, xlab = 'Total House Size\n(Above Ground + Basement + Garage)', 
+                             zlab = 'Quality Score', ylab = 'Year Built\n(or of last remodel)')
+```
+
+```{r 3D plot with prediction grid, out.width="100%"}
+par(bg = 'black', col.axis ="white", col.main = 'white', col.lab = 'white')
+scatterplot3d::scatterplot3d(x = pred_grid$Tot_Size, y = pred_grid$Year_Remod_Add, color = 'white',
+                             z = pred_grid$Overall_Qual, xlab = 'Total House Size\n(Above Ground + Basement + Garage)', 
+                             zlab = 'Quality Score', ylab = 'Year Built\n(or of last remodel)')
+```
+:::
+
+## Underfitting
+
+::: {style="float: left; width: 70%;"}
+- omitting key variables leads to less capacity to model a process    
+- *goodness of fit* amount of variance in the response which can be explained by the predictor(s). R^2^.  
+-  calculated using *residuals* the distance along the y axis from the regression line to the observation   
+
+<center>
+```{r Residuals, out.width="85%"}
+ames_sub <- ames[sample(1:nrow(ames), size = 100, replace = F),]
+my_mod_2 <- lm(Sale_Price ~ Gr_Liv_Area, data = ames_sub)
+par(bg = 'black', col.axis ="white", col.main = 'white', col.lab = 'white')
+plot(x = ames_sub$Gr_Liv_Area, y = ames_sub$Sale_Price, col = '#CAC7A7', 
+     ylab = 'Sales Price (Thousands)', xlab = 'Size (in Square Feet)', 
+     main = 'Relationship between Sales Price and House Size')
+abline(my_mod_2, col = 'white')
+segments(x0 = ames_sub$Gr_Liv_Area, x1 = ames_sub$Gr_Liv_Area, 
+         y0 = ames_sub$Sale_Price, y1 = predict(my_mod_2),
+         lwd = 1, col = "red") 
+
+rm(my_mod_2, ames_sub)
+```
+</center>
+:::
+
+::: {style="float: right; width: 30%;"}
+```{r Underfitting}
+data.frame(
+ Model = c('Above Ground Size', 
+           'Total House Size * Year Remodelled or Built'), 
+ R_squared = c(round(summary(my_mod)$r.squared, 2), round(summary(my_mod_many_vars)$r.squared, 2))
+) |>
+  knitr::kable(col.names = c('Independent Variables', 'R-squared')) |>
+  kableExtra::kable_styling(latex_options = "HOLD_position")
+```
+:::
+
+## Balance 
+
+- A balance exists between the number of predictor variables, the predictive power of the model, and the ability of it to generalize.
+
+## Prediction 
+
+- Going from the relationship represented via our test data and model to estimating on new data. 
+- Can our model predict values of responses from our predictor variables?
+- *Prediction Interval*  
+
+::: {.column width="100%"}
+<center>
+
+```{r Prediction Intervals, out.width = "65%"}
+pred_intervals <- predict(
+  my_mod, 
+  newdata = pred_grid,
+  interval = 'prediction', level = 0.95)
+
+par(bg = 'black', col.axis ="white", col.main = 'white', col.lab = 'white')
+plot(x = ames$Gr_Liv_Area, y = ames$Sale_Price, col = '#CAC7A7', 
+     ylab = 'Sales Price (Thousands)', xlab = 'Size (in Square Feet)',  
+     main = 'Predicted Sales Prices')
+lines(pred_grid$Gr_Liv_Area, pred_intervals[,1], col = '#C8102E', lty = 2, lwd = 2)
+lines(pred_grid$Gr_Liv_Area, pred_intervals[,2], col="#F1BE48", lty=2)
+lines(pred_grid$Gr_Liv_Area, pred_intervals[,3], col="#F1BE48", lty=2)
+
+rm(pred_intervals)
+```
+
+</center>
+:::
+
+## Can Space be put into a model?
+::: {style="float: left; width: 60%;"}
+- We know that spatial relationships often times affect variables  
+- For example, many people like to live in certain school zones, near office districts, or in parks.   
+- Here we hold all values of our predictors constant, and predict how house price is affected solely by geographic location.   
+:::
+
+::: {style="float: right; width: 40%;"}
+```{r spatial ames, out.width="100%", eval = F}
+gam_spat <- mgcv::gam(Sale_Price ~ s(Latitude, Longitude) + Gr_Liv_Area + 
+                        Total_Bsmt_SF + Garage_Area + Year_Remod_Add,
+          data = ames, method = 'REML')
+
+pred_grid <- expand.grid(
+  Gr_Liv_Area = mean(ames$Gr_Liv_Area),
+  Total_Bsmt_SF = mean(ames$Total_Bsmt_SF), 
+  Garage_Area = mean(ames$Garage_Area), 
+  Year_Remod_Add = mean(ames$Year_Remod_Add)
+  )
+
+ames_r <- rast(terra::ext(ames), crs = "epsg:26914", nrows = 100, ncols = 100, nlyrs = 4)
+ames_r <- setValues(ames_r, pred_grid)
+Longitude <- init(ames_r[[1]], 'x'); Latitude <- init(ames_r[[1]], 'y')
+ames_r <- c(ames_r, Longitude, Latitude)
+names(ames_r) <- c(colnames(pred_grid), 'Longitude', 'Latitude')
+
+prediction <- terra::predict(ames_r, gam_spat, type="response") 
+
+ames_sf <- tigris::places(state = 'Iowa', progress_bar = FALSE) %>% 
+  filter(NAME == 'Ames') %>% 
+  sf::st_transform(26914) %>% 
+  sf::st_crop( ext(prediction))
+
+prediction <- mask(prediction, ames_sf)
+prediction_df <- as.data.frame(prediction, xy = TRUE)
+
+ggplot() + 
+  geom_raster(data = prediction_df, aes(x = x, y = y, fill = lyr1/1000)) + 
+  scale_fill_distiller('Predicted', palette = 'Greens', direction = 1) +
+  geom_sf(data = ames, aes(color = Sale_Price/1000)) + 
+  theme_void() + 
+  labs(title = 'Sale Prices Across Ames (Thousands)', color = 'Observed') + 
+  theme(legend.position = 'bottom', 
+        plot.title = element_text(hjust = 0.5), 
+        plot.margin = margin(t = 0,  # Top margin
+                             r = 0,  # Right margin
+                             b = 0,  # Bottom margin
+                             l = 0)) + 
+  guides(colour = guide_colourbar(title.position="top", title.hjust = 0.5),
+         fill = guide_colourbar(title.position="top", title.hjust = 0.5)) + 
+  labs(x = NULL, y = NULL) 
+ggsave('../images/ames_space.png')
+```
+
+<center>
+![<font size="4">Ames Housing Prices</font>](./images/ames_space.png){width=100%}
+</center>
+::: 
+
+```{r}
+rm(ames_r, Longitude, Latitude, gam_spat, pred_grid, my_mod, my_mod_many_vars, pred_df, ames_sf)
+```
+
+# What's a Species Distribution Model? 
+
+- using known occurrences of a species, identify areas which have
+similar habitat and the potential to support populations   
+- occurrences as a response, environmental variables as predictors  
+- generate statistical model  
+- project model onto gridded surfaces to make maps  
+
+## Data Sources 
+
+- Opportunistic  
+  - Herbaria Consortia  
+  - INaturalist   
+  - GBIF    
+- Standardized  
+  - USFS, BLM, NPS  
+  - VegBank, Research Projects  
+
+## Predictor Variables 
+
+- 44 variables max, most models grab 10-15 variables  
+- Soils (texture, pH, salinity, depth to bedrock, fragments)  
+- Geomorphology (slope, aspect, topographic position, elevation)  
+- Vegetation (forest, shrub, herb cover)  
+- Temperature (min/max/mean coldest/warmest season/month, seasonality)  
+- Precipitation (mean annual, min/max coldest/warmest season/month, humidity)  
+- Growing season (number of days, heat accumulation 0/5/10 degrees)
+- etc. 
+
+## Predict onto Surfaces? 
+
+::: {style="float: left; width: 40%;"}
+- Nearly all models can be predicted onto gridded surfaces if variables exist as rasters.
+- here we have masked areas with < 60% probability of suitable habitat
+:::
+
+::: {style="float: right; width: 60%;"}
+<center>
+![<font size="4">_Cymopterus bulbosus_ - Montrose Area</font>](./images/raw_sdm_output.png){height=60%, width=60%}
+</center>
+:::
+
+## "But what about the forest?" 
+
+- Competition? Dispersal Limitation? Mutualisms?  
+
+<center>
+![Pepe Silvia](./images/PepeSilvia.png){width=50%}
+</center>
+
+## Interpretation 
+::: {style="float: left; width: 40%;"}
+- *The Probability of Suitable Habitat*   
+- no guarantee a population is established, just that one could *probably* grow there.
+- We restrict the spatial data you have to *occupied* and *connected basins* and BLM land 
+:::
+
+::: {style="float: right; width: 60%;"}
+<center>
+![<font size="4">_Cymopterus bulbosus_ - Montrose Area</font>](./images/Occurrence-occupied-drainages.png){width=100%}
+</center>
+:::
+
+## What are these Phenology things?  
+
+::: {style="float: left; width: 50%;"}
+- You should have estimates of the flowering order of all your species.  
+- Some Warm Desert species, notably Grasses & Shrubs, which flower over Winter or multiple times have known problems (and solutions).  
+- Geographic 'Extent':   
+  - Extent: Known Species Range or Western US.  
+  - Extent: Areas within Range hypothesized by SDM's as suitable habitat.  
+  
+:::
+
+::: {style="float: right; width: 50%;"}
+- Grain  
+  - Time: Biweekly intervals.   
+  - Space: 1 kilometer cells. 
+
+<center>
+![<font size="4">Phenology tabular</font>](./images/Phenology-tracker.png){width=100%}
+</center>
+:::
+
+## Data Sources  
+
+- Opportunistic  
+  - Herbaria 
+
+## Predictor Variables  
+
+- number of growing degree days 0/5/10 (ngd)  
+- heat accumulation  0/5/10 (gdd)   
+- annual snow water equivalent (swe)  
+- mean monthly vapour pressure deficit (vpd)  
+
+## Use Models as tools to help you plan hitches. 
+
+![<font size="4">Tools</font>](./images/Tools.png){width=95%}
